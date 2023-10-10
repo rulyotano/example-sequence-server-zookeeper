@@ -9,3 +9,14 @@ services:
       - 3888:3888
       - 8080:8080
     restart: always
+
+  node:
+    image: ${DOCKER_REGISTRY-}sequencenode
+    restart: always
+    build:
+      context: SequenceNode
+      target: prod
+    deploy:
+      replicas: 4
+    environment:
+      - Zookeeper__ConnectionString=zookeeper
