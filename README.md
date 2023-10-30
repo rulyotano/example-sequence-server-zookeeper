@@ -1,4 +1,4 @@
-# sample-sequence-server-zookeeper
+# Example Sequence Server Zookeeper
 Sample repo to create sequenced servers by using ZooKeeper
 
 - [Nice Udemy post that helped me to understand what ZooKeeper is](https://bikas-katwal.medium.com/zookeeper-introduction-designing-a-distributed-system-using-zookeeper-and-java-7f1b108e236e)
