@@ -91,3 +91,111 @@ private async Task AssignSequenceIfNoAsync(CancellationToken cancellationToken)
 ---
 
 This demo exemplifies a hands-on, minimal setup for learning about ZooKeeper, distributed coordination, and ephemeral resource assignment using znodes. It also illustrates how even a basic C# implementation can make use of these powerful coordination patterns.
+
+## 4. Practical Demo: Running & Testing the Distributed Sequence Server
+
+This section walks you through running and testing the distributed sequence number server using Docker and Docker Compose. The scenario is based directly on the steps and demos from the project README.
+
+### Prerequisites
+- Docker and Docker Compose installed.
+
+### Step 1: Start ZooKeeper
+
+```bash
+cd ./code
+docker compose up -d zookeeper
+```
+Now you have a simple ZooKeeper instance running.
+
+#### (Optional) Test the ZooKeeper Instance
+```bash
+docker ps # or docker container ls
+# Find the zookeeper container ID, then
+# Connect to ZooKeeper CLI:
+docker exec -it <container-id> zkCli.sh
+# In ZooKeeper CLI, try:
+ls /
+```
+
+Should see:
+
+```
+[zk: localhost:2181(CONNECTED) 1] ls /
+[zookeeper]
+```
+
+### Step 2: Build and Run SequenceNode Instances
+
+Build the SequenceNode Docker image:
+```bash
+cd ./code/SequenceNode
+docker image build -t sequencenode --target prod .
+```
+
+Start multiple SequenceNode containers:
+```bash
+docker run -p 5001:80 --name sequencenode1 --network code_default -d sequencenode && \
+docker run -p 5002:80 --name sequencenode2 --network code_default -d sequencenode && \
+docker run -p 5003:80 --name sequencenode3 --network code_default -d sequencenode && \
+docker run -p 5004:80 --name sequencenode4 --network code_default -d sequencenode
+```
+Note: The `code_default` network is created by compose by default. If different, adjust the `--network` flag accordingly.
+
+### Step 3: Testing
+- Open a terminal or browser to test the sequence API.
+
+#### Using curl:
+```bash
+curl http://localhost:500x/sequence
+```
+Replace `x` with 1, 2, 3, or 4, depending on which container you want to test.
+
+We should get:
+
+```
+% curl http://localhost:5002/sequence                                                                                                    ~
+2%
+```
+
+#### Using a browser:
+Visit:
+- http://localhost:500x/swagger (API docs)
+- http://localhost:500x/sequence (direct endpoint)
+
+#### Demo Sequence
+1. Query sequence for 1, 2, and 3.
+2. Stop 2: `docker container stop sequencenode2`
+3. Query for 4 (should now claim the freed number 2!)
+4. Restart 2: `docker container start sequencenode2`
+5. Query 2 again, now should assign sequence 4.
+
+#### Notes on ZooKeeper Container
+If you stop the ZooKeeper container, all sequence API requests will fail. When restarted, requests work again, but ephemeral znodes may not be deleted; new sequences will start after the last inserted (e.g., 5 in the running example).
+
+### Step 4: Test with Docker Compose Scaling
+
+1. Change the number of replicas in `docker-compose.yml`, e.g. from 1 to 4.
+2. Run:
+```bash
+docker compose up -d
+```
+3. All replicas start up. Access via Docker networking:
+
+Connect directly to containers:
+  
+```bash
+docker ps # Find container ID
+docker exec <container-id> wget -qO- http://localhost/sequence
+```
+
+Or create an Alpine container attached to the same network:
+```bash
+docker run -it --rm --network code_default alpine sh
+wget -qO- http://node/sequence
+```
+
+This approach lets you observe ephemeral sequence allocation under load balancing and real distributed conditions.
+
+---
+
+By following the steps above, you can reproduce the entire demo setup and observe dynamic, ephemeral sequence assignments in a real distributed system using ZooKeeper and Docker.
