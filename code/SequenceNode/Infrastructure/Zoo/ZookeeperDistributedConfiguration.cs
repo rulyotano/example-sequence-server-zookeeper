@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Text;
 using org.apache.zookeeper;
-using org.apache.zookeeper.data;
 using SequenceNode.Application;
 using SequenceNode.Infrastructure.Zoo;
 

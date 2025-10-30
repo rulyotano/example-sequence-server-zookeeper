@@ -7,6 +7,8 @@ Sample repo to create sequenced servers by using ZooKeeper
 - [ZooKeeper Dotnet Library](https://github.com/shayhatsor/zookeeper)
 
 
+![logo](img/logo.png "Logo")
+
 ## Goal
 
 The goal of this sample project is to be able to have many servers with a unique sequence number. This challenge came to my mind after during a coding interview I was asked to design an ID generator. My approach was to use the [Tweeter Snowflake Id Algorithm](https://en.wikipedia.org/wiki/Snowflake_ID). The interviewer asked "But how are going to assign the id to the servers, those are automatically generated" I said, "Well let's use something like ZooKeeper" (but to be honest I had no idea how it works). And then they asked "But, for example, what happens if the servers go down and then recover, the id is the same, or it is different?"... I had no idea, I didn't know exactly how it works. So I decided to try it, after gaining a bit more knowledge about how docker works, it is nice to try it.
